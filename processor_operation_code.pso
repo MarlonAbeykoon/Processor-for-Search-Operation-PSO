@@ -1,0 +1,18 @@
+	Code				Hex			Comments
+		STORE R1, #0H 		00H			Initialize the SD location to search from beginning
+		STORE R2, #0H		10H			Initialize the data buffer location
+		STORE R3, #18H		2FH			To loop 24 characters in data buffer
+		SET SOR			D0H			Set SOR signal
+     HERE:   	JumpNbit EOR, HERE	A4H			Polling till EOR is set
+CHECKLOOP: 	CJE R3, #0, FOUND	80H			If all chars in databuffer is matched R3 will be 0
+		STORE R4, @R1		30H			Get 1 byte char from SD card
+		DEC R3			60H			Decrement by 1 to loop 24 times
+		INC R1			40H			Increment the location of SD card since it is already read in this iteration
+		INC R2			50H			Data buffer location increment by 1
+		CJE R4, @R2, CHECKLOOP	95H			Compare data in data buffer location pointed by R2 with R4 data obtained from 										SD card and continue loop if equal
+		STORE R3, #18H		2FH			Reload R3 to loop from beginning since match failed
+		ADD R1, R3		70H			Add the missing bits to skip to the next data row in SD card
+		STORE R2, #0H		10H			Data buffer location set to 0 to read from beginning
+		JUMP CHECKLOOP		E5H			Continue the loop
+    FOUND: 	SET DF			C0H			Set data found flag
+
